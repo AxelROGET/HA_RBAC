@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home Assistant RBAC</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <style>
+      .custom-flex {
+        &:not(.collapse) {
+          display: flex;
+        }
+        &.collapse {
+          &.show {
+            display: flex;
+          }
+          &:not(.show) {
+            display: none;
+          }
+        }
+
+      }
+    </style>
+
+</head>
+<body>
+
+      <!-- ! Popup de configuration des groupes -->
+      <div class="modal modal-xl fade" id="modal_rights_configuration" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h1 class="modal-title fs-5"></h1>
+            </div>
+            <div class="modal-body">
+              <div class="row">
+                
+                <div class="col-12 col-lg-6">
+                  
+                  <!-- * All devices -->
+                  <ul class="list-group" id="areas">
+                    
+                  </ul>
+
+                </div>
+
+                <div class="col-12 col-lg-6 mt-3 mt-lg-0">
+                  
+                  <!-- * Devices configuration -->
+                  <ul class="list-group" id="entities_configuration"></ul>
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    <!-- ! Popup de création d'un groupe -->
+    <div class="modal fade" id="modal_create_group" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+              <h1 class="modal-title fs-5">Create a group</h1>
+            </div>
+            <div class="modal-body">
+              <label for="group-id">Group id</label>
+              <input type="text" id="group-id" name="group-id" class="form-control" placeholder="Enter group id" oninput="this.value = this.value.toLowerCase().replace(/[\s_\']/g, '-')">
+
+              <br>
+
+              <label for="group-name">Group name</label>
+              <input type="text" id="group-name" name="group-name" class="form-control" placeholder="Enter group name">
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+              <button type="button" class="btn btn-primary">Create</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    <div class="container" style="padding-top: 20px;">
+        <div class="row">
+            <div class="col-12 col-md-3">
+                <!-- ! Users -->
+                <ul class="list-group" id="users">
+                
+                </ul>
+
+                <button type="button" id="export_auth" class="btn btn-success my-4 w-100">Publish changes</button>
+            </div>
+            <div class="col-12 col-md-9">
+                <!-- ! Groups -->
+                <div id="groups" class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+
+                </div>
+            </div>
+        </div>
+        
+    </div>
+
+    
+
+</body>
+<!-- ! DEBUG -->
+<!-- <script src="./data/auth.js"></script>
+<script src="./data/core.device_registry.js"></script>
+<script src="./data/core.entity_registry.js"></script> -->
+
+<!-- ! PROD -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+<script src="./js/jquery.js"></script>
+<script
+  src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"
+  integrity="sha256-lSjKY0/srUM9BE3dPm+c4fBo1dky2v27Gdjm2uoZaL0="
+  crossorigin="anonymous"></script>
+  <script src="./js/jquery.ui.touch-punch.min.js"></script>
+  <script src="./js/rbac.js"></script>
+<script src="./js/config.js"></script>
+<script src="./js/script.js"></script>
+<script src="./js/area.js"></script>
+<script src="./js/config_entities.js"></script>
+
+</html>
