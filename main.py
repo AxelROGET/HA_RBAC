@@ -8,14 +8,14 @@ PORT = 8000
 WEB_DIR = os.path.join(os.path.dirname(__file__), 'web')
 
 # PRODUCTION
-""" AUTH_FILE_PATH = '/homeassistant/.storage/auth'
+AUTH_FILE_PATH = '/homeassistant/.storage/auth'
 DEVICES_FILE_PATH = '/homeassistant/.storage/core.device_registry'
-ENTITIES_FILE_PATH = '/homeassistant/.storage/core.entity_registry' """
+ENTITIES_FILE_PATH = '/homeassistant/.storage/core.entity_registry'
 
 # DEVELOPPEMENT
-AUTH_FILE_PATH = os.path.join(os.path.dirname(__file__), 'temp', 'auth')
+""" AUTH_FILE_PATH = os.path.join(os.path.dirname(__file__), 'temp', 'auth')
 DEVICES_FILE_PATH = os.path.join(os.path.dirname(__file__), 'temp', 'devices')
-ENTITIES_FILE_PATH = os.path.join(os.path.dirname(__file__), 'temp', 'entities')
+ENTITIES_FILE_PATH = os.path.join(os.path.dirname(__file__), 'temp', 'entities') """
 
 
 
