@@ -32,3 +32,4 @@ homeassistant_api: true
 
 map:
   - homeassistant_config:rw
+image: "axelroget/image-{arch}-ha_rbac"
