@@ -1,6 +1,6 @@
 name: "HA RBAC"
 description: "Graphical Role Based Access Control for Home Assistant"
-version: "0.1.5"
+version: "0.2.5"
 slug: "ha_rbac"
 init: false
 arch:
@@ -16,19 +16,14 @@ ports:
 # Panel configuration
 ingress: true
 ingress_port: 8000
-# TODO only authorize IP 172.30.32.2 on the web server
 
 panel_icon: "mdi:shield-lock"
 panel_title: "Home Assistant RBAC"
+panel_admin: true
 
 # Security
 homeassistant_api: true
-# privileged:
-#   - NET_ADMIN
-#   - SYS_ADMIN
-#   - SYS_RAWIO
-#   - SYS_TIME
-#   - SYS_NICE
+
 
 map:
   - homeassistant_config:rw

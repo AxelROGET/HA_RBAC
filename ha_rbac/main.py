@@ -1,26 +1,36 @@
 import http.server
 import socketserver
 import os
+import sys
 
 # TODO filter IP 
 
 PORT = 8000
 WEB_DIR = os.path.join(os.path.dirname(__file__), 'web')
 
-# PRODUCTION
-""" AUTH_FILE_PATH = '/homeassistant/.storage/auth'
-DEVICES_FILE_PATH = '/homeassistant/.storage/core.device_registry'
-ENTITIES_FILE_PATH = '/homeassistant/.storage/core.entity_registry' """
+if '--debug' in sys.argv:
+    # DEVELOPMENT
+    print("Running in debug mode, no authentification needed. Do not use in production.")
+    AUTH_FILE_PATH = os.path.join(os.path.dirname(__file__), 'temp', 'auth')
+    DEVICES_FILE_PATH = os.path.join(os.path.dirname(__file__), 'temp', 'devices')
+    ENTITIES_FILE_PATH = os.path.join(os.path.dirname(__file__), 'temp', 'entities')
 
-# DEVELOPPEMENT
-AUTH_FILE_PATH = os.path.join(os.path.dirname(__file__), 'temp', 'auth')
-DEVICES_FILE_PATH = os.path.join(os.path.dirname(__file__), 'temp', 'devices')
-ENTITIES_FILE_PATH = os.path.join(os.path.dirname(__file__), 'temp', 'entities')
+else:
+    # PRODUCTION
+    AUTH_FILE_PATH = '/homeassistant/.storage/auth'
+    DEVICES_FILE_PATH = '/homeassistant/.storage/core.device_registry'
+    ENTITIES_FILE_PATH = '/homeassistant/.storage/core.entity_registry'
+
+
 
 
 
 class MyHttpRequestHandler(http.server.SimpleHTTPRequestHandler):
     def do_GET(self):
+        if not self.check_auth(): 
+            self.send_response(401)
+            self.end_headers()
+            return
         if self.path == '/':
             self.path = '/index.html'
         elif self.path == '/api/auth':
@@ -50,6 +60,10 @@ class MyHttpRequestHandler(http.server.SimpleHTTPRequestHandler):
         return http.server.SimpleHTTPRequestHandler.do_GET(self)
     
     def do_POST(self):
+        if not self.check_auth(): 
+            self.send_response(401)
+            self.end_headers()
+            return
         if self.path == '/api/auth':
             # Lire le body de la requête
             content_length = int(self.headers['Content-Length'])
@@ -62,6 +76,12 @@ class MyHttpRequestHandler(http.server.SimpleHTTPRequestHandler):
             self.end_headers()
             return
         return http.server.SimpleHTTPRequestHandler.do_POST(self)
+    
+    def check_auth(self):
+        if not '--debug' in sys.argv:
+            return True if self.client_address[0] == '172.30.32.2' else False
+        else:
+            return True
     
 os.chdir(WEB_DIR)
 
