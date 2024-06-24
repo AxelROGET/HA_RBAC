@@ -93,6 +93,7 @@ class RBAC {
             contentType: "application/json",
             success: function(data) {
                 console.log(data);
+                $("#toastOK").toast("show");
             },
             error: function(err) {
                 alert("An error occured while publishing the auth file");
