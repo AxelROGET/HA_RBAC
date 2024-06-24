@@ -1,6 +1,6 @@
 # Features
-This Home Assistant Add-on is a web interface controlling the [auth feature in Home Assistant](https://developers.home-assistant.io/docs/auth_permissions/).
-Indeed, you can create groups, drag and drop users inside (a user can be in multiple groups), then configure devices and entities that a group is allowed to interact with. 
+This Home Assistant Add-on provides a web interface controlling the [auth feature in Home Assistant](https://developers.home-assistant.io/docs/auth_permissions/).
+You can create groups, drag and drop users inside (a user can belong to multiple groups), then configure devices and entities that each group is allowed to interact with. 
 
 For each group, you can configure each device (and entity) with the following permissions:
 - Write: normal access without RBAC
@@ -22,7 +22,9 @@ This will also exclude all entities from the logbook for admins.
 
 # Limits
 Despite that Home Assistant allows authorizations to go further, the project doesn't currently support the difference between controlling and editing a device. 
-Also, this project only uses ``entity_ids`` to configure rights, it doesn't support yet ``device_ids``, ``area_ids`` and ``domains``. Thus, you won't be able to configure a hierarchy among entities, devices, areas and domains. But it doesn't change anything if you're not aiming to use this add-on for advanced merging policies. 
+Also, this project only uses ``entity_ids`` to configure rights, it doesn't support yet ``device_ids``, ``area_ids`` and ``domains``. Thus, you won't be able to configure a hierarchy among entities, devices, areas and domains. But it doesn't change anything if you're not aiming to use this add-on for advanced merging policies.
+
+This is still work in progress, most of theses features are planned to be implemented in the future.
 
 # Installation
 [![Open your Home Assistant instance and show the add add-on repository dialog with a specific repository URL pre-filled.](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2FAxelROGET%2FHA_RBAC)
