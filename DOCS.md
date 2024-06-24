@@ -25,13 +25,6 @@ Despite that Home Assistant allows authorizations to go further, the project doe
 Also, this project only uses ``entity_ids`` to configure rights, it doesn't support yet ``device_ids``, ``area_ids`` and ``domains``. Thus, you won't be able to configure a hierarchy among entities, devices, areas and domains. But it doesn't change anything if you're not aiming to use this add-on for advanced merging policies. 
 
 # Installation
-Architectures available:
-- aarch64
-- armv7
-- armhf
-
-More architectures are coming soon!
-
 [![Open your Home Assistant instance and show the add add-on repository dialog with a specific repository URL pre-filled.](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2FAxelROGET%2FHA_RBAC)
 
 # License
