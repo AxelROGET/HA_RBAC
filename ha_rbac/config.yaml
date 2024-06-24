@@ -1,6 +1,6 @@
 name: "HA RBAC"
 description: "Graphical Role Based Access Control for Home Assistant"
-version: "0.2.5"
+version: "0.3.0"
 slug: "ha_rbac"
 init: false
 arch:
