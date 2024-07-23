@@ -1,5 +1,5 @@
 # Features
-This Home Assistant Add-on provides a web interface controlling the [auth feature in Home Assistant](https://developers.home-assistant.io/docs/auth_permissions/).
+This Home Assistant RBAC Add-on provides a web interface controlling the [auth feature in Home Assistant](https://developers.home-assistant.io/docs/auth_permissions/).
 You can create groups, drag and drop users inside (a user can belong to multiple groups), then configure devices and entities that each group is allowed to interact with. 
 
 For each group, you can configure each device (and entity) with the following permissions:
