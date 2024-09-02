@@ -3,8 +3,6 @@ import socketserver
 import os
 import sys
 
-# TODO filter IP 
-
 PORT = 8000
 WEB_DIR = os.path.join(os.path.dirname(__file__), 'web')
 

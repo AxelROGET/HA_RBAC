@@ -47,7 +47,6 @@ let entity_registry;
 $(() => {
 
     // ! If a config device is deleted
-    // TODO remove device from config
     $("#entities_configuration").on("click", ".btn-close", function() {
         console.log("Removing device from config");
         const device_id = $(this).parent().parent().attr("data-device-id");

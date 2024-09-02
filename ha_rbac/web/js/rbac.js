@@ -40,6 +40,7 @@ class RBAC {
         }
 
         // ! Devices
+        Device.init(this);
         /** @type {Array.<Device>} */
         this.devices = []
 
@@ -77,9 +78,9 @@ class RBAC {
 
         // ! User actions 
         // * If a device is deleted in the config panel
-        $("#entities_configuration").on("click", ".btn-close", function() {
+        /* $("#entities_configuration").on("click", ".btn-close", function() {
 
-        })
+        }) */
         
 
     }
@@ -157,6 +158,13 @@ class Area {
         Entity.init(rbac);
 
 
+        // ! Listen to the click to configure an area
+        $("#entities_configuration").on("click", `[data-type="area"] button`, function() {
+            console.log("FLAG");
+            console.log($(this));
+        })
+
+
 
     }
 
@@ -177,27 +185,27 @@ class Area {
     /**
      * @description Add device to the area in the config panel (at the left) in the DOM
      * @param {Device} device 
+     * @deprecated
      */
     addDevice(device) {
 
-        // * Check if area exists
+
+        console.error("Deprecated function");
+
+        // * Check if area already exists
         if (!$(`#areas>li[data-area-id="${this.id}"]`).length) {
+            let li = $(`<li>`)
+                .addClass("list-group-item")
+                .attr("data-area-id", this.id)
+                .text(this.id)
+                .append($("<ul>").addClass("list-group").addClass("collapse"));
 
-            // * Check if area already exists
-            if (!$(`#areas>li[data-area-id="${this.id}"]`).length) {
-                let li = $(`<li>`)
-                    .addClass("list-group-item")
-                    .attr("data-area-id", this.id)
-                    .text(this.id)
-                    .append($("<ul>").addClass("list-group").addClass("collapse"));
-
-                if (this.id === "unassigned") {
-                    $("#areas").append(li);
-                } else {
-                    $(`#areas>li[data-area-id="unassigned"]`).before(li);
-                }
+            if (this.id === "unassigned") {
+                $("#areas").append(li);
+            } else {
+                //$("<i>").addClass("bi bi-caret-right-square").css("float", "right").insertBefore(li.children().first());
+                $(`#areas>li[data-area-id="unassigned"]`).before(li);
             }
-
         }
 
         let li = $("<li>")
@@ -213,9 +221,138 @@ class Area {
 
     }
 
+    /**
+     * 
+     * @param {Device} device 
+     * @description Add device to the area in the config panel (at the right) in the DOM
+     */
+    addDeviceToConfig(device) {
+        
+        this.findInConfig().children().filter("ul").append(device.htmlConfig());     
+
+    }
+
+    /**
+     * @description Return the <li> element of the area in the config panel (at the right) in the DOM
+     * @returns {JQuery}
+     */
+    findInConfig() {
+        return $(`#entities_configuration li[data-area-id="${this.id}"]`);
+    }
+
+    /**
+     * @description Return the <li> element for the area in the config panel (at the right)
+     * This function doesn't append the li to the DOM, it just returns the element
+     */
+    htmlConfig() {
+        let li = $("<li>")
+            .addClass("list-group-item")
+            .attr("data-area-id", this.id?this.id:"unassigned")
+            
+        let div = $("<div>")
+            .addClass("d-flex")
+            .addClass("justify-content-between")
+            .addClass("align-items-center")
+            .text(this.id?this.id:"unassigned")
+            .appendTo(li);
+
+        let dropdown = $("<div>")
+            .addClass("dropdown")
+            .addClass("d-flex")
+            .addClass("justify-content-end")
+            .addClass("align-items-center")
+            .appendTo(div);
+        
+        $("<button>")
+            .addClass("btn btn-secondary dropdown-toggle")
+            .attr("type", "button")
+            .attr("id", `dropdownMenuButton${this.id?this.id:"unassigned"}`)
+            .attr("data-bs-toggle", "dropdown")
+            .attr("aria-expanded", "false")
+            .append($("<i>").addClass("bi bi-question-circle"))
+            .appendTo(dropdown);
+
+        generateDropdownMenu(this.id?this.id:"unassigned","area" ,true).appendTo(dropdown);
+
+        let list = $("<ul>")
+            .addClass("list-group")
+            .addClass("mt-2")
+            .appendTo(li);
+
+        return li;
+    }
+}
+
+/**
+ * 
+ * @param {String} id Id of the dropdown (usually the id of the area, device or entity)
+ * @param {"entity"|"device"|"area"} type What is the dropdown for
+ * @param {Boolean} delete_button If the delete button should be displayed
+ * @returns {JQuery}
+ */
+function generateDropdownMenu(id, type, delete_button=true) {
+
+    if(type != "area" && type != "device" && type != "entity") {
+        throw new Error(`Type ${type} not found. Must be "area", "device" or "entity"`);
+    }
+
+    return $(
+            `
+        <div class="dropdown-menu overflow-hidden" aria-labelledby="dropdownMenuButton${id}" data-type="${type}">
+            <button class="btn btn-icon" data-permission="not specified"><i class="bi bi-question-circle"></i></button>
+            <button class="btn btn-success btn-icon" data-permission="edit"><i class="bi bi-check-circle"></i></button>
+            <button class="btn btn-warning btn-icon" data-permission="read only"><i class="bi bi-eye"></i></button>
+            <button class="btn btn-danger btn-icon" data-permission="deny"><i class="bi bi-ban"></i></button>
+            ${delete_button?`<button class="btn btn-icon" data-permission="delete"><i class="bi bi-trash3"></i></button>`:""} 
+        </div>
+        `
+    )
+}
+
+function getEmoji(permission) {
+    switch (permission) {
+        case "not specified":
+            return "bi-question-circle";
+        case "edit":
+            return "bi-check-circle";
+        case "deny":
+            return "bi-ban";
+        case "read only":
+            return "bi-eye";
+        default:
+            throw new Error("Permission not found")
+    }
+}
+
+function buttonClass(permission) {
+    switch (permission) {
+        case "not specified":
+            return "btn-secondary";
+        case "edit":
+            return "btn-success";
+        case "deny":
+            return "btn-danger";
+        case "read only":
+            return "btn-warning";
+        default:
+            throw new Error("Permission not found")
+    }
 }
 
 class Device {
+
+    static init(rbac) {
+
+        // TODO configure the device
+
+        
+
+
+        // ! Listen to the click to unfold a device (show entities)
+        $("#entities_configuration").on("click", ".list-group-item .toggle-fold", function() {
+            $(this).parent().parent().children().filter("ul .collapse").collapse("toggle");
+        })
+    }
 
     /**
      * 
@@ -259,12 +396,102 @@ class Device {
 
     }
 
+
+    htmlConfig(called_li=null, current_permission="not specified") {
+        let header = $("<div>")
+            .attr("data-device-id", this.id)
+            .addClass("d-flex")
+            .addClass("justify-content-between")
+            .addClass("align-items-center")
+
+        $("<div>").text(this.name).addClass("toggle-fold").appendTo(header);
+
+        let dropdown = $("<div>")
+            .addClass("dropdown")
+
+        
+        
+
+        $("<button>")
+            .addClass(`btn ${buttonClass(current_permission)} dropdown-toggle`)
+            .attr("type", "button")
+            .attr("id", `dropdownMenuButton${this.id}`)
+            .attr("data-bs-toggle", "dropdown")
+            .attr("aria-expanded", "false")
+            .append($("<i>").addClass(`bi ${getEmoji(current_permission)}`))
+            .appendTo(dropdown);
+
+        generateDropdownMenu(this.id, "device").appendTo(dropdown);
+
+        dropdown.appendTo(header);
+
+        let li = $("<li>").addClass("list-group-item").append(header);
+
+
+        let collapse = $("<ul>")
+            .addClass("collapse")
+            .addClass("list-group")
+            .addClass("mt-2")
+
+
+
+        this.entities.forEach(entity => {
+            $("<li>")
+                .addClass("list-group-item")
+                .append(entity.htmlConfig())
+                .attr("data-type", "entity")
+                .appendTo(collapse);
+        })
+
+        collapse.appendTo(li);
+
+
+
+        
+
+        return li
+
+    }
+
     /**
      * @description Move the device from the list (left) to the config panel (right) in the DOM and add all entities to the config panel
      */
     moveToCustomConfig() {
 
+        // * If the area is unassigned, add the device directly to the config panel
+        // * If the area isn't in the config panel, add the area to the config panel
+        // * If the area is already in the config panel, add the device to the area
+        
+
         console.log("Adding device to config: " + this.id);
+
+        // * Add area in the config panel if it doesn't exist
+        console.debug("Area found: ");
+
+        let area = rbac.areas.find(area => area.id == this.area_id)
+
+        // * Add the device directly to the config panel if the area is unassigned
+        if (!area) {
+
+            throw new Error("To be implemented");
+
+        }
+
+
+        // * Add the area to the config panel if it doesn't exist
+        else if (!$(`#entities_configuration li[data-area-id="${this.area_id?this.area_id:"unassigned"}"]`).length) {
+
+            
+            console.log("Adding area to config: " + area.id);
+            area.htmlConfig().appendTo("#entities_configuration");
+
+
+        } 
+
+        // * Add the device to the area in the config panel
+        if (area) {
+            area.addDeviceToConfig(this);
+        }
 
         // * Delete device from the list
         $(`#areas li[data-device-id="${this.id}"]`).remove();
@@ -280,7 +507,9 @@ class Device {
             .attr("data-device-id", this.id);
 
         
+        return
 
+        // Add buttons
         const buttons = $(`<div class="btn-group float-end" style="margin-left: auto;">
 
             <input type="radio" class="btn-check" name="${this.id}" id="${this.id}-0" autocomplete="off" data-type=device data-permission=edit>
@@ -311,6 +540,7 @@ class Device {
         li.appendTo("#entities_configuration");
 
         // ! Add entities to config panel and check if all permissions are the same
+        // TODO probably need to review the following code
         let permissions = new Set();
         rbac.devices.find(d => d.id == this.id).entities.forEach(entity => {
             entity.addToCustomConfig();
@@ -390,6 +620,10 @@ class Device {
     
         return r?true:false
 
+    }
+
+    config(auth_level) {
+        console.log("Configuring device: " + this.id + " with " + auth_level);
     }
 
 }
@@ -473,7 +707,7 @@ class Entity {
         console.log(group)
         console.log(auth_level)
 
-        console.log(`Configuring entity : ${group.id}/${this.device_id}/${this.entity_id} with ${auth_level}`);
+        console.trace(`Configuring entity : ${group.id}/${this.device_id}/${this.entity_id} with ${auth_level}`);
 
         let group_auth = this.rbac.files.auth.data.groups.find(g => g.id == group.id);
 
@@ -586,12 +820,35 @@ class Entity {
         }
         
 
-
-
     }
 
 
-    
+    /**
+     * @description div content for the entity to be added to the li in the device of the config panel
+     */
+    htmlConfig(current_permission="not specified") {
+
+        return `
+        
+        <div class="d-flex justify-content-between align-items-center" data-device-id="${this.entity_id}">
+
+            ${this.original_name??this.entity_id}
+        
+            <div class="dropdown">
+                <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton${this.entity_id}" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-question-circle"></i>
+                </button>
+
+                ${generateDropdownMenu(this.entity_id, "entity", false).prop("outerHTML")}
+            </div>
+        
+        </div>
+        
+        
+
+        `
+
+    }    
 
 
     
@@ -819,7 +1076,7 @@ class Group {
 
 
 
-
+        // * Add devices to the areas
         device_registry.data.devices.forEach(device_data => {
             //old_rbac.groups.areas.devices.add(device.area_id??null, device);
             
@@ -1198,6 +1455,26 @@ function rbac_init() {
                 break;
 
         }
+        
+
+    })
+
+    // ! Listen to the click on the dropdown buttons to change the icon and the color
+    $("#entities_configuration").on("click", ".list-group-item button", function() {
+        const perm = $(this).attr("data-permission");
+
+        if (perm == "delete") {
+            return;
+        }
+
+        if(perm) {
+            // * Change button icon 
+            $(this).parent().parent().children().filter("button").children().first().attr("class", `bi ${getEmoji(perm)}`);
+
+            // * Change button color
+            $(this).parent().parent().children().filter("button").removeClass("btn-success btn-warning btn-danger btn-secondary").addClass(buttonClass(perm));
+        }
+
         
 
     })
