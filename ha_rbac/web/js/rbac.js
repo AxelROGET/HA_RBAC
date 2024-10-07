@@ -378,11 +378,13 @@ function buttonClass(permission) {
 
 class Device {
 
+    /**
+     * 
+     * @param {RBAC} rbac 
+     */
     static init(rbac) {
 
-        // TODO configure the device
-
-        
+       
 
 
         // ! Listen to the click to unfold a device (show entities)
@@ -394,6 +396,16 @@ class Device {
         $("#entities_configuration").on("click", `[data-type="device"] button`, function() {
             console.trace("Configuring device");
             console.warn("TODO")
+
+            console.log($(this))
+            
+            /** @type {"not specified"|"deny"|"read only"|"write"|"delete"} */
+            const permission = $(this).data("permission");
+
+            // * Configure the device
+            rbac.devices.find(d => d.id == $(this).parent().parent().parent().data("device-id")).configure(permission);
+           
+
         })
     }
 
@@ -436,6 +448,22 @@ class Device {
         /** @type {Array.<Entity>} */
         this.entities = [];
     
+
+    }
+
+    /**
+     * @description Configure the device in the group policy in the auth file
+     * @param {"not specified"|"deny"|"read only"|"write"|"delete"} auth_level 
+     */
+    configure(auth_level) {
+
+        console.trace(`Configuring device : ${this.id} with ${auth_level}`);
+
+        switch(auth_level) {
+            case "delete":
+                this.deleteFromCustomConfig();
+                break;
+        }
 
     }
 
@@ -529,6 +557,17 @@ class Device {
 
 
         } 
+
+        // * If the area is empty, add the list-group
+        if(!$(`#entities_configuration li[data-area-id="${this.area_id?this.area_id:"unassigned"}"] ul`).length) {
+            console.warn("AREA EMPTY");
+            console.log($(`#entities_configuration li[data-area-id="${this.area_id?this.area_id:"unassigned"}"] ul`))
+            $("<ul>")
+                .addClass("list-group")
+                .addClass("collapse")
+                .addClass("mt-2")
+                .appendTo($(`#entities_configuration li[data-area-id="${this.area_id?this.area_id:"unassigned"}]`));
+        }
 
         // * Add the device to the area in the config panel
         if (area) {
@@ -628,15 +667,25 @@ class Device {
 
         console.log(`Removing device from config: ${this.id}`);
 
+        const list_group = $(`#entities_configuration div[data-device-id="${this.id}"]`).parent().parent();
+
         // * Delete device from the config panel
-        $(`#entities_configuration li[data-device-id="${this.id}"]`).remove();
+        $(`#entities_configuration div[data-device-id="${this.id}"]`).parent().remove();
+        // If the area is empty, remove the list-group from the area
+        if(!list_group.children().length) {
+            console.warn("Removing list-group from config");
+            list_group.remove();
+        }
+
+        // TODO can't put the device back after being removed from the config panel
 
         // * Add device to list
-        this.area.addDevice(this);
+        this.area.addDeviceToList(this);
 
         // * Remove all entities from the group policy 
         this.entities.forEach(entity => {
 
+            // TODO change
             delete Group.getOpened().policy.entities.entity_ids[entity.entity_id]
 
         });
