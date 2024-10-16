@@ -473,7 +473,9 @@ class Device {
         // * Add the device directly to the config panel if the area is unassigned
         if (!area) {
 
-            throw new Error("To be implemented");
+            console.log("Adding device to config: " + this.id);
+
+            this.htmlConfig().appendTo("#entities_configuration");
 
         }
 
