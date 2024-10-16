@@ -843,7 +843,7 @@ class Entity {
      */
     showPolicy(policy) {
         
-        switch (policy) {
+        /* switch (policy) {
 
             case "not specified":
                 $(`input[name="${this.entity_id}"]`)[0].checked = true
@@ -860,8 +860,37 @@ class Entity {
             default:
                 throw new Error("Policy not found")
 
+        } */
+
+        const dropdown = $(`#entities_configuration div[data-device-id="${this.entity_id}"] .dropdown > button`)
+            .removeClass("btn-secondary btn-success btn-warning btn-danger");
+        const icon = dropdown.children().first().removeClass("bi-question-circle bi-check-circle bi-eye bi-ban");
+            // TODO change the icon and the color
+
+        console.log(dropdown)
+        // console.log(icon)
+
+        switch(policy) {
+            case "not specified":
+                dropdown.addClass("btn-secondary")
+                icon.addClass("bi-question-circle")
+                break;
+            case "write":
+                dropdown.addClass("btn-success")
+                icon.addClass("bi-check-circle")
+                break;
+            case "read only":
+                dropdown.addClass("btn-warning")
+                icon.addClass("bi-eye")
+                break;
+            case "deny":
+                dropdown.addClass("btn-danger")
+                icon.addClass("bi-ban")
+                break;       
+                
         }
 
+        
     }
 
 
@@ -1185,7 +1214,7 @@ class Group {
             console.log(device);
 
 
-            area.addDevice(device);
+            area.addDeviceToList(device);
 
         })
 
@@ -1202,9 +1231,18 @@ class Group {
 
                 const device = rbac.devices.find(d => d.id == entity.device_id);
 
+                // TODO maybe put those instructions in the entity class
                 if (!device.isInCustomConfig()) {
                     device.moveToCustomConfig();
                 }
+
+                // TODO configure entity 
+                let policy = this.policy.entities.entity_ids[entity_id];
+                if (policy == true) policy = "write";
+                else if (policy == false) policy = "deny";
+                else if (policy?.read) policy = "read only";
+                else throw new Error(`Policy not found: ${policy}`);
+                entity.showPolicy(policy);
         
         });
 
