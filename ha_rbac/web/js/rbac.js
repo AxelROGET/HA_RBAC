@@ -703,15 +703,7 @@ class Device {
      */
     isInCustomConfig() {
 
-        let r=false;
-
-        $("#entities_configuration").children().each((index, d) => {
-            if($(d).data('deviceId') == this.id) {
-                r = true;
-            }
-        })
-    
-        return r?true:false
+        return $(`#entities_configuration div[data-device-id="${this.id}"]`).length?true:false;
 
     }
 
