@@ -160,8 +160,26 @@ class Area {
 
         // ! Listen to the click to configure an area
         $("#entities_configuration").on("click", `[data-type="area"] button`, function() {
-            console.log("FLAG");
-            console.log($(this));
+            console.trace("Configuring area");
+            console.warn("TODO")
+
+            console.log($(this))
+
+            /** @type {"not specified"|"deny"|"read only"|"write"|"delete"} */
+            const permission = $(this).data("permission")
+
+            switch(permission) {
+                case "delete":
+                    // * Delete the area from the left panel if it's existing
+                    $(`#areas>li[data-area-id="${$(this).parent().parent().parent().parent().data("area-id")}"]`).remove();
+
+                    // * Add the area to the left panel
+                    rbac.areas.find(area => area.id == $(this).parent().parent().parent().parent().data("area-id")).addAreaToListWithDevices();
+
+                    // * Delete the area from the config panel
+                    $(this).parent().parent().parent().parent().remove();
+                    break;
+            }
         })
 
 
@@ -191,6 +209,25 @@ class Area {
 
 
         console.error("Deprecated function");
+
+        this.addDeviceToList(device);
+        
+
+    }
+
+    addAreaToListWithDevices() {
+
+        this.devices.forEach(device => {
+            this.addDeviceToList(device);
+        })
+
+    }
+
+    /**
+     * @description Add device to the area in the list panel (at the left) in the DOM
+     * @param {Device} device 
+     */
+    addDeviceToList(device) {
 
         // * Check if area already exists
         if (!$(`#areas>li[data-area-id="${this.id}"]`).length) {
@@ -341,16 +378,34 @@ function buttonClass(permission) {
 
 class Device {
 
+    /**
+     * 
+     * @param {RBAC} rbac 
+     */
     static init(rbac) {
 
-        // TODO configure the device
-
-        
+       
 
 
         // ! Listen to the click to unfold a device (show entities)
         $("#entities_configuration").on("click", ".list-group-item .toggle-fold", function() {
             $(this).parent().parent().children().filter("ul .collapse").collapse("toggle");
+        })
+
+        // ! Listen to the click to configure a device
+        $("#entities_configuration").on("click", `[data-type="device"] button`, function() {
+            console.trace("Configuring device");
+            console.warn("TODO")
+
+            console.log($(this))
+            
+            /** @type {"not specified"|"deny"|"read only"|"write"|"delete"} */
+            const permission = $(this).data("permission");
+
+            // * Configure the device
+            rbac.devices.find(d => d.id == $(this).parent().parent().parent().data("device-id")).configure(permission);
+           
+
         })
     }
 
@@ -393,6 +448,22 @@ class Device {
         /** @type {Array.<Entity>} */
         this.entities = [];
     
+
+    }
+
+    /**
+     * @description Configure the device in the group policy in the auth file
+     * @param {"not specified"|"deny"|"read only"|"write"|"delete"} auth_level 
+     */
+    configure(auth_level) {
+
+        console.trace(`Configuring device : ${this.id} with ${auth_level}`);
+
+        switch(auth_level) {
+            case "delete":
+                this.deleteFromCustomConfig();
+                break;
+        }
 
     }
 
@@ -439,7 +510,6 @@ class Device {
             $("<li>")
                 .addClass("list-group-item")
                 .append(entity.htmlConfig())
-                .attr("data-type", "entity")
                 .appendTo(collapse);
         })
 
@@ -489,6 +559,17 @@ class Device {
 
 
         } 
+
+        // * If the area is empty, add the list-group
+        if(!$(`#entities_configuration li[data-area-id="${this.area_id?this.area_id:"unassigned"}"] ul`).length) {
+            console.warn("AREA EMPTY");
+            console.log($(`#entities_configuration li[data-area-id="${this.area_id?this.area_id:"unassigned"}"] ul`))
+            $("<ul>")
+                .addClass("list-group")
+                .addClass("collapse")
+                .addClass("mt-2")
+                .appendTo($(`#entities_configuration li[data-area-id="${this.area_id?this.area_id:"unassigned"}]`));
+        }
 
         // * Add the device to the area in the config panel
         if (area) {
@@ -588,15 +669,25 @@ class Device {
 
         console.log(`Removing device from config: ${this.id}`);
 
+        const list_group = $(`#entities_configuration div[data-device-id="${this.id}"]`).parent().parent();
+
         // * Delete device from the config panel
-        $(`#entities_configuration li[data-device-id="${this.id}"]`).remove();
+        $(`#entities_configuration div[data-device-id="${this.id}"]`).parent().remove();
+        // If the area is empty, remove the list-group from the area
+        if(!list_group.children().length) {
+            console.warn("Removing list-group from config");
+            list_group.remove();
+        }
+
+        // TODO can't put the device back after being removed from the config panel
 
         // * Add device to list
-        this.area.addDevice(this);
+        this.area.addDeviceToList(this);
 
         // * Remove all entities from the group policy 
         this.entities.forEach(entity => {
 
+            // TODO change
             delete Group.getOpened().policy.entities.entity_ids[entity.entity_id]
 
         });
@@ -653,6 +744,13 @@ class Entity {
 
             })
 
+        })
+
+
+        // ! Listen to the click to configure an entity
+        $("#entities_configuration").on("click", `[data-type="entity"] button`, function() {
+            console.trace("Configuring entity");
+            console.warn("TODO")
         })
     }
     
@@ -780,6 +878,8 @@ class Entity {
      */
     addToCustomConfig() {
 
+        console.error("Deprecated function");
+
         // * Add entity to the config panel
 
         $(`#entities_configuration>li[data-device-id="${this.device_id}"]`).append(`
@@ -787,7 +887,7 @@ class Entity {
             <div class="mb-1 d-flex entity-element" style="justify-content: space-between; align-items: center;">
 
                 ${this.original_name??this.entity_id}
-                <div class="btn-group" style="margin-left: auto;" data-type=entity>
+                <div class="btn-group" style="margin-left: auto;" data-type="entity">
 
                     <input type="radio" class="btn-check" name="${this.entity_id}" id="${this.entity_id}-0" autocomplete="off" checked data-type=entity>
                     <label class="btn btn-outline-secondary" for="${this.entity_id}-0"><i class="bi bi-question-lg"></i></label>
@@ -1389,7 +1489,7 @@ function rbac_init() {
     /**
      * ! Rights configuration
      */
-    $("#entities_configuration").on("click", "input[type=radio][data-type=entity]", function() {
+    $("#entities_configuration").on("click", `input[type=radio][data-type="entity"]`, function() {
         let group_id = $("#modal_rights_configuration").attr("data-group-id");
         let device_id = $(this).closest("li").attr("data-device-id");
         let entity_id = $(this).attr("name");
