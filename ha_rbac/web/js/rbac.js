@@ -457,6 +457,8 @@ class Device {
      */
     configure(auth_level) {
 
+        // TODO
+
         console.trace(`Configuring device : ${this.id} with ${auth_level}`);
 
         switch(auth_level) {
@@ -743,7 +745,49 @@ class Entity {
         $("#entities_configuration").on("click", `[data-type="entity"] button`, function() {
             console.trace("Configuring entity");
             console.warn("TODO")
+
+            console.log($(this))
+
+            /** @type {"not specified"|"deny"|"read only"|"write"} */
+            const permission = $(this).data("permission")
+
+            const entity_id = $(this).parent().parent().parent().data("device-id");
+
+            console.warn(permission, entity_id);
+            
+            // * Configure the entity
+            Entity.configure(entity_id, permission);
+ 
         })
+    }
+
+
+    /**
+     * 
+     * @param {String} entity_id 
+     * @param {"edit"|"read only"|"deny"|"not specified"} permission 
+     */
+    static configure(entity_id, permission) {
+        console.log("Configuring entity: " + entity_id + " with " + permission);
+
+        switch (permission) {
+
+            case "edit":
+                permission = true;
+                break;
+            case "read only":
+                permission = {read: true};
+                break;
+            case "deny":
+                permission = false;
+                break;
+            case "not specified":
+                delete auth.data.groups.find(g => g.id == Group.getOpened().id).policy.entities.entity_ids[entity_id];
+                return;
+        }
+
+        auth.data.groups.find(g => g.id == Group.getOpened().id).policy.entities.entity_ids[entity_id] = permission;
+
     }
     
     /**
