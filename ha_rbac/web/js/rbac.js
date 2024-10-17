@@ -461,11 +461,30 @@ class Device {
 
         console.trace(`Configuring device : ${this.id} with ${auth_level}`);
 
+        let permission = null;
         switch(auth_level) {
             case "delete":
+                delete auth.data.groups.find(g => g.id == Group.getOpened().id).policy.entities.device_ids[this.id];
+                this.entities.forEach(entity =>{
+                    delete auth.data.groups.find(g => g.id == Group.getOpened().id).policy.entities.entity_ids[entity.entity_id];
+                })
                 this.deleteFromCustomConfig();
+                return;
+            case "write":
+                permission = true;
                 break;
+            case "read only":
+                permission = {read: true};
+                break;
+            case "deny":
+                permission = false;
+                break;
+            case "not specified":
+                delete auth.data.groups.find(g => g.id == Group.getOpened().id).policy.entities.device_ids[this.id];
+                return;
         }
+
+        auth.data.groups.find(g => g.id == Group.getOpened().id).policy.entities.device_ids[this.id] = permission;
 
     }
 
@@ -713,6 +732,40 @@ class Device {
         console.log("Configuring device: " + this.id + " with " + auth_level);
     }
 
+
+    /**
+     * 
+     * @param {"deny"|"read only"|"write"} policy 
+     */
+    showPolicy(policy) {
+
+        const dropdown = $(`#entities_configuration div[data-device-id="${this.id}"] .dropdown > button`);
+        const icon = dropdown.children().first();
+
+        dropdown.removeClass("btn-secondary btn-success btn-warning btn-danger");
+        icon.removeClass("bi-question-circle bi-check-circle bi-eye bi-ban");
+
+        switch(policy) {
+            case "not specified":
+                dropdown.addClass("btn-secondary")
+                icon.addClass("bi-question-circle")
+                break;
+            case "write":
+                dropdown.addClass("btn-success")
+                icon.addClass("bi-check-circle")
+                break;
+            case "read only":
+                dropdown.addClass("btn-warning")
+                icon.addClass("bi-eye")
+                break;
+            case "deny":
+                dropdown.addClass("btn-danger")
+                icon.addClass("bi-ban")
+                break;
+        }
+
+    }
+
 }
 
 class Entity {
@@ -744,7 +797,6 @@ class Entity {
         // ! Listen to the click to configure an entity
         $("#entities_configuration").on("click", `[data-type="entity"] button`, function() {
             console.trace("Configuring entity");
-            console.warn("TODO")
 
             console.log($(this))
 
@@ -887,29 +939,9 @@ class Entity {
      */
     showPolicy(policy) {
         
-        /* switch (policy) {
-
-            case "not specified":
-                $(`input[name="${this.entity_id}"]`)[0].checked = true
-                break;
-            case "write":
-                $(`input[name="${this.entity_id}"]`)[3].checked = true
-                break;
-            case "read only":
-                $(`input[name="${this.entity_id}"]`)[2].checked = true
-                break;
-            case "deny":
-                $(`input[name="${this.entity_id}"]`)[1].checked = true
-                break;
-            default:
-                throw new Error("Policy not found")
-
-        } */
-
         const dropdown = $(`#entities_configuration div[data-device-id="${this.entity_id}"] .dropdown > button`)
             .removeClass("btn-secondary btn-success btn-warning btn-danger");
         const icon = dropdown.children().first().removeClass("bi-question-circle bi-check-circle bi-eye bi-ban");
-            // TODO change the icon and the color
 
         console.log(dropdown)
         // console.log(icon)
@@ -1264,7 +1296,7 @@ class Group {
 
         // * Delete config devices from the list and add them to the config
         console.debug(this.policy);
-        Object.keys(this.policy?.entities?.entity_ids).forEach((entity_id, index) => {
+        Object.keys(this.policy?.entities?.entity_ids??{}).forEach((entity_id, index) => {
 
                 // * Add entity to the config panel
 
@@ -1289,6 +1321,26 @@ class Group {
                 entity.showPolicy(policy);
         
         });
+
+        Object.keys(this.policy?.entities?.device_ids??{}).forEach((device_id, index) => {
+
+            const device = rbac.devices.find(d => d.id == device_id); 
+            let permission = this.policy.entities.device_ids[device_id];
+
+            if (permission == true) permission = "write";
+            else if (permission == false) permission = "deny";
+            else if (permission?.read) permission = "read only";
+            else throw new Error(`Permission not found: ${permission}`);
+            // else permission = "not specified";
+            console.warn(`Adding device to config: ${device_id} with permission ${permission}`);
+
+            if (!device.isInCustomConfig()) {
+                device.moveToCustomConfig();
+            }
+
+            // configure device
+            device.showPolicy(permission);
+        })
 
     }
 
