@@ -179,10 +179,43 @@ class Area {
                     // * Delete the area from the config panel
                     $(this).parent().parent().parent().parent().remove();
                     break;
+
+                default:
+                    // * Configure the area
+                    Area.configure($(this).parent().parent().parent().parent().data("area-id"), permission);
+                
             }
         })
 
 
+
+    }
+
+    /**
+     * 
+     * @param {String} area_id 
+     * @param {"not specified"|"write"|"read only"|"deny"} permission 
+     * @returns 
+     */
+    static configure(area_id, permission) {
+        console.log("Configuring area: " + area_id + " with " + permission);
+
+        switch(permission) {
+            case "not specified":
+                delete auth.data.groups.find(g => g.id == Group.getOpened().id).policy.entities.area_ids[area_id];
+                break;
+            case "deny": 
+                auth.data.groups.find(g => g.id == Group.getOpened().id).policy.entities.area_ids[area_id] = false;
+                break;
+            case "read only":
+                auth.data.groups.find(g => g.id == Group.getOpened().id).policy.entities.area_ids[area_id] = {read: true};
+                break;
+            case "write":
+                auth.data.groups.find(g => g.id == Group.getOpened().id).policy.entities.area_ids[area_id] = true;
+                break;
+            default:
+                throw new Error("Permission not found");
+        }
 
     }
 
@@ -317,6 +350,56 @@ class Area {
             .appendTo(li);
 
         return li;
+    }
+
+    /**
+     * 
+     * @param {"not specified"|"deny"|"read only"|"write"} policy 
+     */
+    showPolicy(policy) {
+        const dropdown = $(`#entities_configuration li[data-area-id="${this.id}"] > div > .dropdown > button`);
+        const icon = dropdown.children().first();
+
+        dropdown.removeClass("btn-secondary btn-success btn-warning btn-danger");
+        icon.removeClass("bi-question-circle bi-check-circle bi-eye bi-ban");
+
+        switch(policy) {
+            case "not specified":
+                dropdown.addClass("btn-secondary")
+                icon.addClass("bi-question-circle")
+                break;
+            case "write":
+                dropdown.addClass("btn-success")
+                icon.addClass("bi-check-circle")
+                break;
+            case "read only":
+                dropdown.addClass("btn-warning")
+                icon.addClass("bi-eye")
+                break;
+            case "deny":
+                dropdown.addClass("btn-danger")
+                icon.addClass("bi-ban")
+                break;
+        }
+
+    }
+
+
+    /**
+     * @returns {Boolean}
+     */
+    isInCustomConfig() {
+
+        return $(`#entities_configuration li[data-area-id="${this.id}"]`).length?true:false;
+
+    }
+
+    moveToCustomConfig() {
+
+        // ! NEW FUNCTION 
+        // TODO 
+        console.warn("TODO moveToCustomConfig");
+
     }
 }
 
@@ -1341,6 +1424,25 @@ class Group {
             // configure device
             device.showPolicy(permission);
         })
+
+
+        Object.keys(this.policy?.entities?.area_ids??{}).forEach((area_id, index) => {
+
+            const area = rbac.areas.find(a => a.id == area_id);
+            let permission = this.policy.entities.area_ids[area_id];
+
+            if (permission == true) permission = "write";
+            else if (permission == false) permission = "deny";
+            else if (permission?.read) permission = "read only";
+            else throw new Error(`Permission not found: ${permission}`);
+
+            console.warn(`Adding area to config: ${area_id} with permission ${permission}`);
+
+            if (!area.isInCustomConfig()) {
+                
+            }
+
+        });
 
     }
 
