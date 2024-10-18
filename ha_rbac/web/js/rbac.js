@@ -214,7 +214,7 @@ class Area {
                 auth.data.groups.find(g => g.id == Group.getOpened().id).policy.entities.area_ids[area_id] = true;
                 break;
             default:
-                throw new Error("Permission not found");
+                throw new Error(`Permission not found : ${permission}`);
         }
 
     }
@@ -400,6 +400,8 @@ class Area {
         // TODO 
         console.warn("TODO moveToCustomConfig");
 
+        this.htmlConfig().appendTo("#entities_configuration");
+
     }
 }
 
@@ -420,7 +422,7 @@ function generateDropdownMenu(id, type, delete_button=true) {
             `
         <div class="dropdown-menu overflow-hidden" aria-labelledby="dropdownMenuButton${id}" data-type="${type}">
             <button class="btn btn-icon" data-permission="not specified"><i class="bi bi-question-circle"></i></button>
-            <button class="btn btn-success btn-icon" data-permission="edit"><i class="bi bi-check-circle"></i></button>
+            <button class="btn btn-success btn-icon" data-permission="write"><i class="bi bi-check-circle"></i></button>
             <button class="btn btn-warning btn-icon" data-permission="read only"><i class="bi bi-eye"></i></button>
             <button class="btn btn-danger btn-icon" data-permission="deny"><i class="bi bi-ban"></i></button>
             ${delete_button?`<button class="btn btn-icon" data-permission="delete"><i class="bi bi-trash3"></i></button>`:""} 
@@ -433,7 +435,7 @@ function getEmoji(permission) {
     switch (permission) {
         case "not specified":
             return "bi-question-circle";
-        case "edit":
+        case "write":
             return "bi-check-circle";
         case "deny":
             return "bi-ban";
@@ -448,7 +450,7 @@ function buttonClass(permission) {
     switch (permission) {
         case "not specified":
             return "btn-secondary";
-        case "edit":
+        case "write":
             return "btn-success";
         case "deny":
             return "btn-danger";
@@ -659,8 +661,7 @@ class Device {
 
             
             console.log("Adding area to config: " + area.id);
-            area.htmlConfig().appendTo("#entities_configuration");
-
+            area.moveToCustomConfig();
 
         } 
 
@@ -900,14 +901,14 @@ class Entity {
     /**
      * 
      * @param {String} entity_id 
-     * @param {"edit"|"read only"|"deny"|"not specified"} permission 
+     * @param {"write"|"read only"|"deny"|"not specified"} permission 
      */
     static configure(entity_id, permission) {
         console.log("Configuring entity: " + entity_id + " with " + permission);
 
         switch (permission) {
 
-            case "edit":
+            case "write":
                 permission = true;
                 break;
             case "read only":
@@ -1439,8 +1440,11 @@ class Group {
             console.warn(`Adding area to config: ${area_id} with permission ${permission}`);
 
             if (!area.isInCustomConfig()) {
-                
+                area.moveToCustomConfig();
             }
+
+            // configure area 
+            area.showPolicy(permission);
 
         });
 
@@ -1760,7 +1764,7 @@ function rbac_init() {
     $("#entities_configuration").on("click", "input[type=radio][data-type=device]", function() {
         let device_id = $(this).closest("li").attr("data-device-id");
 
-        /** @type {"edit"|"deny"|"read only"|"write"|"delete"} */
+        /** @type {"write"|"deny"|"read only"|"write"|"delete"} */
         let permission = $(this).attr("data-permission");
 
         switch (permission) {
@@ -1779,7 +1783,7 @@ function rbac_init() {
                 console.log($(this))
                 $(this).parent().parent().parent().children().filter(".entity-element").animate({height: "hide"}, 200).promise().done((elem) => elem.removeClass("d-flex"))
                 break;
-            case "edit":
+            case "write":
                 // Unfold entities
                 $(this).parent().parent().parent().children().filter(".entity-element").addClass("d-flex").animate({height: "show"}, 200)
                 break;
