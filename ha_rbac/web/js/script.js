@@ -20,6 +20,8 @@ $("#modal_create_group .btn-primary").on("click", function() {
     $("#modal_create_group").modal("hide");
 
     Group.droppable();
+
+    rbac.groups.push(group);
 })
 
 // If enter is pressed

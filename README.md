@@ -20,7 +20,7 @@ logbook:
 ```
 This will also exclude all entities from the logbook for admins. 
 
-# Limits
+# Limits (implemented in 0.4.0)
 Despite that Home Assistant allows authorizations to go further, the project doesn't currently support the difference between controlling and editing a device. 
 Also, this project only uses ``entity_ids`` to configure rights, it doesn't support yet ``device_ids``, ``area_ids`` and ``domains``. Thus, you won't be able to configure a hierarchy among entities, devices, areas and domains. But it doesn't change anything if you're not aiming to use this add-on for advanced merging policies.
 
