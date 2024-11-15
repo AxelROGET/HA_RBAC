@@ -198,24 +198,31 @@ class Area {
      * @returns 
      */
     static configure(area_id, permission) {
-        console.log("Configuring area: " + area_id + " with " + permission);
+        let newPermission;
 
         switch(permission) {
             case "not specified":
-                delete auth.data.groups.find(g => g.id == Group.getOpened().id).policy.entities.area_ids[area_id];
+                delete auth.data.groups.find(g => g.id == Group.getOpened().id).policy?.entities?.area_ids[area_id];
                 break;
             case "deny": 
-                auth.data.groups.find(g => g.id == Group.getOpened().id).policy.entities.area_ids[area_id] = false;
+                 newPermission = false;
                 break;
             case "read only":
-                auth.data.groups.find(g => g.id == Group.getOpened().id).policy.entities.area_ids[area_id] = {read: true};
+                newPermission = {read: true};
                 break;
             case "write":
-                auth.data.groups.find(g => g.id == Group.getOpened().id).policy.entities.area_ids[area_id] = true;
+                newPermission = true;
                 break;
             default:
                 throw new Error(`Permission not found : ${permission}`);
         }
+
+        const policy = auth.data.groups.find(g => g.id == Group.getOpened().id).policy;
+
+        if(!policy.entities) policy.entities = {area_ids: {}};
+        if(!policy.entities.area_ids) policy.entities.area_ids = {};
+
+        auth.data.groups.find(g => g.id == Group.getOpened().id).policy.entities.area_ids[area_id] = newPermission;
 
     }
 
@@ -396,10 +403,6 @@ class Area {
 
     moveToCustomConfig() {
 
-        // ! NEW FUNCTION 
-        // TODO 
-        console.warn("TODO moveToCustomConfig");
-
         this.htmlConfig().appendTo("#entities_configuration");
 
     }
@@ -541,11 +544,6 @@ class Device {
      * @param {"not specified"|"deny"|"read only"|"write"|"delete"} auth_level 
      */
     configure(auth_level) {
-
-        // TODO
-
-        console.trace(`Configuring device : ${this.id} with ${auth_level}`);
-
         let permission = null;
         switch(auth_level) {
             case "delete":
@@ -569,7 +567,12 @@ class Device {
                 return;
         }
 
-        auth.data.groups.find(g => g.id == Group.getOpened().id).policy.entities.device_ids[this.id] = permission;
+    
+        const policy = auth.data.groups.find(g => g.id == Group.getOpened().id).policy;
+        if(!policy.entities) policy.entities = {device_ids: {}};
+        if(!policy.entities.device_ids) policy.entities.device_ids = {};
+
+        policy.entities.device_ids[this.id] = permission;
 
     }
 
